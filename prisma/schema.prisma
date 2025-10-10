@@ -47,9 +47,3 @@ model TMDB {
   lastRequestAt  DateTime?
   requestesCount Int       @default(0)
 }
-
-model TPDB {
-  key            String    @id
-  lastRequestAt  DateTime?
-  requestesCount Int       @default(0)
-}

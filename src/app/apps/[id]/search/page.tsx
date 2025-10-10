@@ -5,7 +5,6 @@ import {QualityProfile} from "@/common/api/Radarr/entities/QualityProfileAPI"
 import {RootFolder} from "@/common/api/Radarr/entities/RootFolderAPI"
 import {Genre} from "@/common/api/TMDB/entities/GenresAPI"
 import {MovieResult} from "@/common/api/TMDB/entities/SearchAPI"
-import {Data} from "@/common/api/TPDB/types"
 import InfinitProgressOverlay from "@/components/common/InfinitProgressOverlay"
 import Grid, {Item} from "@/components/common/ItemsLayout/Grid"
 import ModalPopup from "@/components/common/ModalPopup"
@@ -14,7 +13,6 @@ import {TMDBImage} from "@/components/common/TMDB/Image"
 import Rating from "@/components/common/TMDB/Rating"
 import {useNotifications} from "@/components/NotificationsProvider"
 import {useTMDBApi} from "@/components/TMDBApiProvider"
-import {useTPDBApi} from "@/components/TPDBApiProvider"
 import CheckCircle from "@mui/icons-material/CheckCircle"
 import {FormControlLabel, Switch} from "@mui/material"
 import LinearProgress from "@mui/material/LinearProgress"
@@ -63,14 +61,13 @@ const SemiTransparentCard = styled(Card)(({ theme }) => ({
 type DetailsProps = {
   id: number | string
   appId: string
-  provider: 'tmdb' | 'tpdb'
   onClose: (id?: number | string) => void
 }
 
-const Details = ({id, appId, provider, onClose}: DetailsProps) => {
+const Details = ({id, appId, onClose}: DetailsProps) => {
   const {addNotification} = useNotifications()
 
-  const [details, setDetails] = useState<MovieResult | Data | null>(null)
+  const [details, setDetails] = useState<MovieResult | null>(null)
   const [addingMovie, setAddingMovie] = useState(false)
   const [app, setApp] = useState<App | null>(null)
   const [addedMovie, setAddedMovie] = useState<boolean | undefined>(undefined)
@@ -98,7 +95,7 @@ const Details = ({id, appId, provider, onClose}: DetailsProps) => {
   }, [appId])
 
   useEffect(() => {
-    fetch(`/api/${provider}/movie/${id}`)
+    fetch(`/api/tmdb/movie/${id}`)
       .then(res => res.json())
       .then(data => {
         setDetails(data.data ? data.data : data)
@@ -106,12 +103,10 @@ const Details = ({id, appId, provider, onClose}: DetailsProps) => {
   }, [id])
 
   useEffect(() => {
-    if (provider === 'tmdb') {
-      fetch(`/api/app/${appId}/movie?tmdbId=${id}`).then(res => res.json()).then(data => {
-        setAddedMovie(data.length > 0)
-      })
-    }
-  }, [appId, id, provider])
+    fetch(`/api/app/${appId}/movie?tmdbId=${id}`).then(res => res.json()).then(data => {
+      setAddedMovie(data.length > 0)
+    })
+  }, [appId, id])
 
   useEffect(() => {
     if(!addedMovie) {
@@ -218,7 +213,7 @@ const Details = ({id, appId, provider, onClose}: DetailsProps) => {
 
   return (
     <ModalPopup onClose={onCloseHandler} title={details.title}>
-      <MovieCard movie={details} provider={provider} actions={
+      <MovieCard movie={details} actions={
         app ? (
           <>
             {addedMovie
@@ -287,7 +282,7 @@ const Details = ({id, appId, provider, onClose}: DetailsProps) => {
   )
 }
 
-const AdditionalInfo = ({item, results}: { item: Item, results: MovieResult[] | Data[] }) => {
+const AdditionalInfo = ({item, results}: { item: Item, results: MovieResult[] }) => {
   const result = useMemo(() => {
     return results.find(r => r.id === item.id)
   }, [item.id, results])
@@ -298,14 +293,14 @@ const AdditionalInfo = ({item, results}: { item: Item, results: MovieResult[] | 
 
   return (
     <Stack direction="row" spacing={2} justifyContent="space-between" paddingTop={2}>
-      <Rating value={(result as MovieResult).vote_average | (result as Data).rating} />
+      <Rating value={result.vote_average} />
       {/* @ts-ignore */}
       <CheckCircle fontSize="large" sx={{width: '40px', height: '40px'}} color={result.movieAdded ? 'success' : 'error'} />
     </Stack>
   )
 }
 
-const SearchResults = (props: { results: MovieResult[] | Data[], items: Item[], onClick: (id: number | string) => void }) => {
+const SearchResults = (props: { results: MovieResult[], items: Item[], onClick: (id: number | string) => void }) => {
   const {results, items, onClick} = props
 
   return (
@@ -322,10 +317,9 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params)
   const searchParams = useSearchParams()
   const {ok, configuration, formatImagePath, formatReleaseYear} = useTMDBApi()
-  const {user} = useTPDBApi()
   const {addNotification} = useNotifications()
 
-  const [results, setResults] = useState<MovieResult[] | Data[] | undefined>(undefined)
+  const [results, setResults] = useState<MovieResult[] | undefined>(undefined)
   const [items, setItems] = useState<Item[]>([])
   const [genres, setGenres] = useState<Genre[] | null>(null)
   const [searching, setSearching] = useState(false)
@@ -334,21 +328,8 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
   const [hideJavanese, setHideJavanese] = useState(false)
   const [hideNoPoster, setHideNoPoster] = useState(false)
   const [hideNoRating, setHideNoRating] = useState(false)
-  const [searchProvider, setSearchProvider] = useState<'tmdb' | 'tpdb'>('tmdb')
-  const [searchProviders, setSearchProviders] = useState<string[]>([])
 
   const eventSource = useRef<EventSource | undefined>(undefined)
-
-  useEffect(() => {
-    const providers = []
-    if (ok) {
-      providers.push('tmdb')
-    }
-    if (user) {
-      providers.push('tpdb')
-    }
-    setSearchProviders(providers)
-  }, [ok, user])
 
   useEffect(() => {
     if (ok) {
@@ -366,48 +347,33 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
       return
     }
     let filteredResults = results
-    if (searchProvider === 'tmdb') {
-      const filters: ((result: MovieResult) => boolean)[] = []
-      if(hideJavanese) {
-        filters.push((result: MovieResult) => result.original_language !== 'ja')
-      }
-      if(hideAdded) {
-        filters.push((result: MovieResult) => !result.movieAdded)
-      }
-      if(hideNoPoster) {
-        filters.push((result: MovieResult) => !!result.poster_path)
-      }
-      if(hideNoRating) {
-        filters.push((result: MovieResult) => !!result.vote_average)
-      }
-      if(filters.length) {
-        filteredResults = (filteredResults as MovieResult[]).filter(result => filters.every(filter => filter(result)))
-      }
+    const filters: ((result: MovieResult) => boolean)[] = []
+    if(hideJavanese) {
+      filters.push((result: MovieResult) => result.original_language !== 'ja')
+    }
+    if(hideAdded) {
+      filters.push((result: MovieResult) => !result.movieAdded)
+    }
+    if(hideNoPoster) {
+      filters.push((result: MovieResult) => !!result.poster_path)
+    }
+    if(hideNoRating) {
+      filters.push((result: MovieResult) => !!result.vote_average)
+    }
+    if(filters.length) {
+      filteredResults = (filteredResults as MovieResult[]).filter(result => filters.every(filter => filter(result)))
     }
 
-    let items: Item[] = []
-    if (searchProvider === 'tmdb') {
-      items = (filteredResults as MovieResult[]).map((result) => {
-        const releaseYear = formatReleaseYear(result.release_date)
-        return {
-          id: result.id,
-          title: `${result.title}${releaseYear ? ` (${releaseYear})` : ''}`,
-          image: result.poster_path ? formatImagePath(result.poster_path, 'poster', 1) : undefined
-        }
-      })
-    }
-    if (searchProvider === 'tpdb') {
-      items = (filteredResults as Data[]).map((result) => {
-        const releaseYear = formatReleaseYear(result.date)
-        return {
-          id: result.id,
-          title: `${result.title}${releaseYear ? ` (${releaseYear})` : ''}`,
-          image: result.poster
-        }
-      })
-    }
+    const items: Item[] = (filteredResults as MovieResult[]).map((result) => {
+      const releaseYear = formatReleaseYear(result.release_date)
+      return {
+        id: result.id,
+        title: `${result.title}${releaseYear ? ` (${releaseYear})` : ''}`,
+        image: result.poster_path ? formatImagePath(result.poster_path, 'poster', 1) : undefined
+      }
+    })
     setItems(items)
-  }, [configuration, formatImagePath, results, hideAdded, hideJavanese, hideNoPoster, hideNoRating, formatReleaseYear, searchProvider])
+  }, [configuration, formatImagePath, results, hideAdded, hideJavanese, hideNoPoster, hideNoRating, formatReleaseYear])
 
   const search = useCallback((e: any) => {
     if (e.preventDefault) {
@@ -428,7 +394,7 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
       eventSource.current = undefined
     }
 
-    eventSource.current = new EventSource(`/api/app/${params.id}/search/${encodeURIComponent(term)}/${searchProvider}`)
+    eventSource.current = new EventSource(`/api/app/${params.id}/search/${encodeURIComponent(term)}/tmdb`)
 
     eventSource.current.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -440,12 +406,7 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
           type: 'error'
         })
       }
-      if(searchProvider === 'tpdb') {
-        setResults(prev => prev ? [...prev, ...data] : data)
-      }
-      if (searchProvider === 'tmdb') {
-        setResults(prev => prev ? [...prev, ...data.results] : data.results)
-      }
+      setResults(prev => prev ? [...prev, ...data.results] : data.results)
     }
 
     eventSource.current.onerror = () => {
@@ -456,7 +417,7 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
       setSearching(false)
     }
 
-  }, [params, searchProvider])
+  }, [addNotification, params.id])
 
   useEffect(() => {
     const term = searchParams.get('term')
@@ -513,30 +474,16 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
             <Stack direction="row" spacing={2}>
               <TextField label="Search" variant="standard" name="term" defaultValue={searchParams.get('term')}
                          fullWidth/>
-              <FormControl fullWidth>
-                <InputLabel>Provider</InputLabel>
-                <Select
-                  value={searchProvider}
-                  label="Provider"
-                  onChange={e => setSearchProvider(e.target.value as 'tmdb' | 'tpdb')}
-                >
-                  {searchProviders.map(sp => (
-                    <MenuItem key={sp} value={sp}>{sp}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
               <SearchIconButton type="submit">
                 <SearchIcon />
               </SearchIconButton>
             </Stack>
-            {searchProvider === 'tmdb' && (
-              <Stack direction="row" spacing={2}>
-                <FormControlLabel control={<Switch value={hideAdded} onChange={onHideAddedChange} />} label="Hide Added" />
-                <FormControlLabel control={<Switch value={hideJavanese} onChange={onHideJavaneseChange} />} label="Hide Javanese" />
-                <FormControlLabel control={<Switch value={hideNoPoster} onChange={onHideNoPosterChange} />} label="Hide No Poster" />
-                <FormControlLabel control={<Switch value={hideNoRating} onChange={onHideNoRatingChange} />} label="Hide No Rating" />
-              </Stack>
-            )}
+            <Stack direction="row" spacing={2}>
+              <FormControlLabel control={<Switch value={hideAdded} onChange={onHideAddedChange} />} label="Hide Added" />
+              <FormControlLabel control={<Switch value={hideJavanese} onChange={onHideJavaneseChange} />} label="Hide Javanese" />
+              <FormControlLabel control={<Switch value={hideNoPoster} onChange={onHideNoPosterChange} />} label="Hide No Poster" />
+              <FormControlLabel control={<Switch value={hideNoRating} onChange={onHideNoRatingChange} />} label="Hide No Rating" />
+            </Stack>
           </CardContent>
         </form>
       </Card>
@@ -554,7 +501,7 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
         </CardContent>
       </Card>
       {detailsForID && (
-        <Details id={detailsForID} appId={params.id} provider={searchProvider} onClose={onDetailsClose} />
+        <Details id={detailsForID} appId={params.id} onClose={onDetailsClose} />
       )}
     </Stack>
   )

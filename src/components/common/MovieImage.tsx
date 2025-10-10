@@ -1,6 +1,5 @@
 import {Movie} from "@/common/api/Radarr/entities/MovieAPI"
 import {MovieResult} from "@/common/api/TMDB/entities/SearchAPI"
-import {Data} from "@/common/api/TPDB/types"
 import {useTMDBApi} from "@/components/TMDBApiProvider"
 import {SxProps} from "@mui/material/styles"
 import styled from "@mui/material/styles/styled"
@@ -52,16 +51,4 @@ export const PosterTMDBImage = ({movie, size, sx}: {movie: Movie | MovieResult, 
 
 export const BackdropTMDBImage = ({movie, size, sx}: {movie: Movie | MovieResult, size: number, sx?: SxProps}) => {
   return <BaseTMDBImage movie={movie} type="backdrop" size={size} sx={sx} />
-}
-
-export const BaseTPDBImage = ({movie, type, sx}: {movie: Data, type: 'back_image' | 'poster', sx?: SxProps}) => {
-  return <Img src={movie[type]} alt={movie.title} sx={sx} />
-}
-
-export const PosterTPDBImage = ({movie, sx}: {movie: Data, sx?: SxProps}) => {
-  return <BaseTPDBImage movie={movie} type="poster" sx={sx} />
-}
-
-export const BackdropTPDBImage = ({movie, sx}: {movie: Data, sx?: SxProps}) => {
-  return <BaseTPDBImage movie={movie} type="back_image" sx={sx} />
 }

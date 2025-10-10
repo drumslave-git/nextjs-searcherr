@@ -205,14 +205,14 @@ const Details = ({id, records, appId, onClose}: {id: number | string, records: Q
 
   return (
     <ModalPopup onClose={onClose} title={`${movie.title} (${movie.year})`}>
-      <MovieCard movie={movie} provider="tmdb" actions={(
+      <MovieCard movie={movie} actions={(
         <Button variant="contained" onClick={onMerge}>Merge</Button>
       )}>
         <Stack spacing={2}>
           <Card raised>
             <CardContent>
               <Typography component="div">{record.title}</Typography>
-              <Typography component="div" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" title={moviePath}>{moviePath}</Typography>
+              <Typography component="div" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" title={moviePath || 'not found'}>{moviePath}</Typography>
               {record.statusMessages && (
                 <List>
                   {record.statusMessages.map((statusMessage, statusMessageIndex) => (

@@ -22,6 +22,10 @@ const postHandler = async (req: NextRequestWithMergerrApi & NextRequestWithApi) 
     return Response.json({message: 'manual import failed'}, {status: manualImportResp.status})
   }
 
+  if (!queue.movieId) {
+    throw Error('Movie ID is required')
+  }
+
   const merge = await req.mergerrAPI.create({
     movieId: queue.movieId,
     tmdbId: queue.movie.tmdbId,

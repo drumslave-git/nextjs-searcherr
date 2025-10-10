@@ -1,6 +1,5 @@
 import ScrollToTop from "@/components/common/ScrollToTop"
 import {TMDBApiProvider} from "@/components/TMDBApiProvider"
-import {TPDBApiProvider} from "@/components/TPDBApiProvider"
 import Version from "@/components/Version"
 import Box from "@mui/material/Box"
 import Stack from "@mui/material/Stack"
@@ -33,7 +32,6 @@ export default function RootLayout({
       <ClientTheme>
         <NotificationsProvider>
           <TMDBApiProvider>
-            <TPDBApiProvider>
               <Box sx={{maxWidth: 1200, margin: "10px auto"}}>
                 <Paper elevation={2} component="header" sx={{
                   display: 'flex',
@@ -59,7 +57,6 @@ export default function RootLayout({
                 </Paper>
                 {children}
               </Box>
-            </TPDBApiProvider>
           </TMDBApiProvider>
         </NotificationsProvider>
       </ClientTheme>
