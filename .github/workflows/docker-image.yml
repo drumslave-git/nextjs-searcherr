@@ -12,8 +12,8 @@ jobs:
     outputs:
       package: ${{ steps.changes.outputs.package }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: dorny/paths-filter@v3
+    - uses: actions/checkout@v5
+    - uses: dorny/paths-filter@v4
       id: changes
       with:
         filters: |
@@ -27,7 +27,7 @@ jobs:
     steps:
       -
         name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         name: get-npm-version
         id: package-version
