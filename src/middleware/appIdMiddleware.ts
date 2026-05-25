@@ -6,9 +6,9 @@ import {NextRequestWithApi} from "@/lib/withApi"
 export default async function appIdMiddleware(
   req: NextRequestWithApi,
   id: string
-) {
+): Promise<Response | undefined> {
   if (!id) {
-    return Response.json({ message: 'appId is required' }, {status: 404})
+    return Response.json({message: 'appId is required'}, {status: 400})
   }
 
   const app = await prisma.app.findUnique({
@@ -20,6 +20,8 @@ export default async function appIdMiddleware(
   if (!app) {
     return Response.json({message: 'App not found'}, {status: 404})
   }
+
+  req.app = app
 
   const tmdbConfig = await prisma.tMDB.findFirst()
 

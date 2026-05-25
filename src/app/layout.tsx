@@ -16,7 +16,7 @@ import { NotificationsProvider } from "@/components/NotificationsProvider"
 
 export const metadata: Metadata = {
   title: "Mergerr",
-  description: "Merge split files for arrs stack",
+  description: "Manage import queue for *arr stack",
 }
 
 export default function RootLayout({

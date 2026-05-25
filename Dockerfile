@@ -23,7 +23,7 @@ RUN npm run build
 # Step 2. Production image, copy all the files and run next
 FROM base AS runner
 
-RUN apk add --no-cache ffmpeg shadow su-exec python3 py3-pip make gcc g++ libffi-dev openssl
+RUN apk add --no-cache shadow su-exec python3 py3-pip make gcc g++ libffi-dev openssl
 
 WORKDIR /app
 

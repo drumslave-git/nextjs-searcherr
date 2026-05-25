@@ -1,11 +1,10 @@
 import AppIcon from "@/components/AppIcon"
-import {MergerrProvider} from "@/components/MergerrProvider"
-import Merges from "@/components/Merges"
 import Queue from "@/components/Queue"
 import {prisma} from "@/lib/prisma"
 import Box from "@mui/material/Box"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
+import {notFound} from "next/navigation"
 
 export default async function AppPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -15,8 +14,8 @@ export default async function AppPage(props: { params: Promise<{ id: string }> }
     },
   })
   if (!app) {
-    return null
-  } 
+    notFound()
+  }
 
   return <Paper>
     <Box sx={{p: 2}}>
@@ -29,10 +28,7 @@ export default async function AppPage(props: { params: Promise<{ id: string }> }
       <Typography variant="subtitle2" gutterBottom>
         {app.url}
       </Typography>
-      <MergerrProvider app={app}>
-        <Queue app={app} />
-        <Merges />
-      </MergerrProvider>
+      <Queue app={app} />
     </Box>
   </Paper>
 }

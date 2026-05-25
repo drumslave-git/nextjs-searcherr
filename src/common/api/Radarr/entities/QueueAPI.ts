@@ -47,6 +47,17 @@ export interface Queue {
 }
 
 export class QueueAPI extends BaseEntityAPI {
+  private emptyQueue(page: number, records: QueueEntry[] = []): Queue {
+    return {
+      page,
+      pageSize: 100,
+      sortKey: '',
+      sortDirection: '',
+      totalRecords: records.length,
+      records,
+    }
+  }
+
   // Method to fetch all queue entries
   async getAll(page = 1, records: QueueEntry[] = []): Promise<AxiosResponse<Queue, any>> {
     const response = await this._get<Queue, any>('queue', {
@@ -56,18 +67,28 @@ export class QueueAPI extends BaseEntityAPI {
       includeMovie: true,
     })
 
-    records = [...records, ...response.data.records]
-    
-    if (records.length < response.data.totalRecords) {
+    const pageRecords = Array.isArray(response.data?.records) ? response.data.records : []
+    if (response.status >= 400) {
+      return {
+        ...response,
+        data: this.emptyQueue(page, records),
+      }
+    }
+
+    records = [...records, ...pageRecords]
+
+    const totalRecords = response.data?.totalRecords ?? records.length
+    if (records.length < totalRecords) {
       return await this.getAll(page + 1, records)
     }
 
     return {
       ...response,
       data: {
+        ...this.emptyQueue(page, records),
         ...response.data,
-        records
-      }
+        records,
+      },
     }
   }
 
@@ -91,10 +112,5 @@ export class QueueAPI extends BaseEntityAPI {
 
   hasStatusMessages(record: QueueEntry): boolean {
     return !!record.statusMessages
-  }
-
-  isMergable(record: QueueEntry): boolean {
-    return !!(record.trackedDownloadStatus === 'warning' && record.statusMessages &&
-      record.statusMessages.filter((msg) => !!msg.messages.find((message) => message === 'Unable to parse file')).length > 1)
   }
 }

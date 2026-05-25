@@ -13,7 +13,16 @@ export class BaseEntityAPI {
       return await this._axios.get<T>(`/${uri}?${qs.stringify(params)}`)
     } catch (e) {
       const error = e as AxiosError
-      return error.response as AxiosResponse<E, any>
+      if (error.response) {
+        return error.response as AxiosResponse<E, any>
+      }
+      return {
+        data: {message: error.message || 'Request failed'} as E,
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: {},
+        config: error.config!,
+      } as AxiosResponse<E, any>
     }
   }
 
@@ -22,7 +31,16 @@ export class BaseEntityAPI {
       return await this._axios.post<T>(`/${uri}?${qs.stringify(params)}`, data)
     } catch (e) {
       const error = e as AxiosError
-      return error.response as AxiosResponse<E, any>
+      if (error.response) {
+        return error.response as AxiosResponse<E, any>
+      }
+      return {
+        data: {message: error.message || 'Request failed'} as E,
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: {},
+        config: error.config!,
+      } as AxiosResponse<E, any>
     }
   }
 

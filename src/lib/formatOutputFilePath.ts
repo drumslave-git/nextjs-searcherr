@@ -1,14 +1,14 @@
 import path from "path"
 import fs from "fs"
 
-export type MergeOutputFile = {
+export type OutputFile = {
   path: string | undefined
   imported: boolean
   exists: boolean
 }
 
 export default function formatOutputFile(item: Record<string, any>) {
-  const result: MergeOutputFile = {
+  const result: OutputFile = {
     path: undefined,
     imported: false,
     exists: false,
@@ -18,9 +18,8 @@ export default function formatOutputFile(item: Record<string, any>) {
     result.imported = true
   } else {
     const pathParts = [item.movie?.path, item.movie?.cleanTitle].filter(Boolean)
-    if (pathParts.length  === 2) {
-      result.path = path.join(...pathParts)
-      result.path += '.mkv'
+    if (pathParts.length === 2) {
+      result.path = `${path.join(...pathParts)}.mkv`
     }
   }
   if (result.path) {

@@ -1,6 +1,6 @@
 FROM node:23-alpine
 
-RUN apk update && apk add --no-cache ffmpeg python3 py3-pip make gcc g++ libffi-dev openssl
+RUN apk update && apk add --no-cache python3 py3-pip make gcc g++ libffi-dev openssl
 
 WORKDIR /app
 

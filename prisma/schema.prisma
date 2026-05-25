@@ -17,29 +17,6 @@ model App {
   url        String  @unique
   public_url String? @default("")
   api_key    String  @unique
-  merges     Merge[] @relation("AppMerges")
-}
-
-model Merge {
-  id       String  @id @default(cuid())
-  inputs   Input[] @relation("MergeInputs")
-  progress Int?    @default(0)
-  error    String? @default("")
-  result   String? @default("")
-  status   String
-  app      App     @relation(fields: [app_id], references: [id], name: "AppMerges", onDelete: Cascade)
-  app_id   String
-  movieId  String  @unique
-  queueId  Int     @unique
-  tmdbId   Int     @unique
-}
-
-model Input {
-  id       String @id @default(cuid())
-  name     String
-  path     String
-  merge    Merge  @relation(fields: [merge_id], references: [id], name: "MergeInputs", onDelete: Cascade)
-  merge_id String
 }
 
 model TMDB {
