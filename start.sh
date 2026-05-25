@@ -16,7 +16,7 @@ chown -R $PUID:$PGID /app
 
 if [ ! -f /app/config/data.db ]; then
   echo "Database not found, creating..."
-  exec su-exec nextjs npx --yes prisma db push
+  su-exec nextjs npx --yes prisma db push
 else
   echo "Database found"
 fi

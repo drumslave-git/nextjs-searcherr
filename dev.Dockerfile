@@ -11,7 +11,7 @@ RUN npm ci --force
 
 COPY . .
 
-RUN npm run db:push
+RUN mkdir -p config
 RUN npm run db:generate
 
-CMD ["npm", "run", "dev:all"]
+CMD ["sh", "-c", "npm run db:push && npm run dev:all"]
