@@ -51,5 +51,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/nextjs-mergerr:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/nextjs-mergerr:${{ steps.package-version.outputs.current-version}}
+            ${{ secrets.DOCKERHUB_USERNAME }}/nextjs-searcherr:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/nextjs-searcherr:${{ steps.package-version.outputs.current-version}}

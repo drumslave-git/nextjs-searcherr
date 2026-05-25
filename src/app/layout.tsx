@@ -15,7 +15,7 @@ import ClientTheme from "@/components/ClientTheme"
 import { NotificationsProvider } from "@/components/NotificationsProvider"
 
 export const metadata: Metadata = {
-  title: "Mergerr",
+  title: "Searcherr",
   description: "Search TMDB and add movies to your *arr stack",
 }
 
@@ -42,7 +42,7 @@ export default function RootLayout({
                 }}>
                   <Link href="/" style={{textDecoration: 'none'}}>
                     <Typography variant="h6" component="div" sx={{flexGrow: 1}} color="textSecondary">
-                      Mergerr
+                      Searcherr
                       <Version/>
                     </Typography>
                   </Link>
