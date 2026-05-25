@@ -57,7 +57,7 @@ export class SearchAPI extends BaseEntityAPI {
         language,
         page: ++currentPage
       })
-      const iterationResults = resp.data.results.filter((result: Result) => result.adult)
+      const iterationResults = resp.data.results.filter((result: Result) => result.adult === include_adult)
       await iterationCallback({
         ...resp,
         data: {

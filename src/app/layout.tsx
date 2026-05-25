@@ -16,7 +16,7 @@ import { NotificationsProvider } from "@/components/NotificationsProvider"
 
 export const metadata: Metadata = {
   title: "Mergerr",
-  description: "Manage import queue for *arr stack",
+  description: "Search TMDB and add movies to your *arr stack",
 }
 
 export default function RootLayout({

@@ -40,7 +40,6 @@ export interface MovieAddData extends MovieLookupResult, MovieAddSetting {}
 
 
 export class MovieAPI extends BaseEntityAPI {
-
   // Method to get all movies
   async get(id?: number | string, tmdbId?: number) {
     return await this._get<MovieResponse[] | Movie, any>("movie" + (id ? `/${id}` : ''), { tmdbId })
@@ -49,15 +48,5 @@ export class MovieAPI extends BaseEntityAPI {
   // Method to add a new movie
   async add(movie: MovieAddData) {
     return await this._post<MovieResponse, any>("movie", movie)
-  }
-
-  // Method to delete a movie by ID
-  async delete(movieId: number, deleteFiles: boolean = false) {
-    await this._delete(`movie/${movieId}`, { deleteFiles })
-  }
-
-  // Method to update an existing movie
-  async update(movie: Movie) {
-    return await this._put<MovieResponse>(`movie/${movie.id}`, movie)
   }
 }

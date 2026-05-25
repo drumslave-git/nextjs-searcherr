@@ -58,6 +58,25 @@ const SemiTransparentCard = styled(Card)(({ theme }) => ({
   backgroundColor: alpha(theme.palette.background.paper, 0.9),
 }))
 
+const mergeUniqueResults = (current: MovieResult[] | undefined, incoming: MovieResult[]) => {
+  const resultsById = new Map<number, MovieResult>()
+
+  current?.forEach(result => {
+    resultsById.set(result.id, result)
+  })
+
+  incoming.forEach(result => {
+    const existing = resultsById.get(result.id)
+    resultsById.set(result.id, existing ? {
+      ...existing,
+      ...result,
+      movieAdded: existing.movieAdded || result.movieAdded,
+    } : result)
+  })
+
+  return Array.from(resultsById.values())
+}
+
 type DetailsProps = {
   id: number | string
   appId: string
@@ -346,7 +365,7 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
       setItems([])
       return
     }
-    let filteredResults = results
+    let filteredResults = mergeUniqueResults(undefined, results)
     const filters: ((result: MovieResult) => boolean)[] = []
     if(hideJavanese) {
       filters.push((result: MovieResult) => result.original_language !== 'ja')
@@ -361,10 +380,10 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
       filters.push((result: MovieResult) => !!result.vote_average)
     }
     if(filters.length) {
-      filteredResults = (filteredResults as MovieResult[]).filter(result => filters.every(filter => filter(result)))
+      filteredResults = filteredResults.filter(result => filters.every(filter => filter(result)))
     }
 
-    const items: Item[] = (filteredResults as MovieResult[]).map((result) => {
+    const items: Item[] = filteredResults.map((result) => {
       const releaseYear = formatReleaseYear(result.release_date)
       return {
         id: result.id,
@@ -388,6 +407,7 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
     if (!term) {
       return
     }
+    setSearching(true)
 
     if (eventSource.current) {
       eventSource.current.close()
@@ -406,7 +426,7 @@ export default function SearchPage(props: { params: Promise<{ id: string }> }) {
           type: 'error'
         })
       }
-      setResults(prev => prev ? [...prev, ...data.results] : data.results)
+      setResults(prev => mergeUniqueResults(prev, data.results))
     }
 
     eventSource.current.onerror = () => {

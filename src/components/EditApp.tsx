@@ -114,7 +114,7 @@ export default function EditApp({app}: { app?: App }) {
       method: 'POST',
       body: JSON.stringify(appConfig),
     }).then(res => res.json()).then(data => {
-      router.push(`/apps/${data.id}`)
+      router.push(`/apps/${data.id}/search`)
     }).catch(err => {
       console.error(err)
     })

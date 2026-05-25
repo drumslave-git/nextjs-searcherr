@@ -40,24 +40,4 @@ export class SystemAPI extends BaseEntityAPI {
   async getStatus() {
     return await this._get<SystemStatus, any>("system/status")
   }
-
-  // Method to get system logs
-  async getLogs() {
-    return await this._get<string[], any>("log")
-  }
-
-  // Method to trigger application restart
-  async restart() {
-    await this._post("system/restart")
-  }
-
-  // Method to trigger application shutdown
-  async shutdown() {
-    await this._post("system/shutdown")
-  }
-
-  // Method to get Radarr's current backup list
-  async getBackups() {
-    return await this._get<string[], any>("backup")
-  }
 }

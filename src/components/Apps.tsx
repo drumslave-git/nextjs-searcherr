@@ -27,17 +27,12 @@ const Apps = () => {
             <AppIcon app={app}/>
           </ListItemIcon>
           <ListItemText primary={
-            <Link href={app.public_url || app.url} target="_blank" rel="noreferrer" passHref>
-              <Button color="secondary">
+            <Link href={`/apps/${app.id}/search`} passHref>
+              <Button color="primary">
                 {app.name}
               </Button>
             </Link>
           }/>
-          <Link href={`/apps/${app.id}`} passHref>
-            <Button color="primary">
-              View Queue
-            </Button>
-          </Link>
           <Link href={`/apps/${app.id}/search`} passHref>
             <Button color="secondary">
               Search
@@ -46,11 +41,6 @@ const Apps = () => {
           <Link href={`/apps/${app.id}/edit`} passHref>
             <Button color="secondary">
               Edit
-            </Button>
-          </Link>
-          <Link href={`/apps/${app.id}/delete`} passHref>
-            <Button color="error">
-              Delete
             </Button>
           </Link>
         </ListItem>

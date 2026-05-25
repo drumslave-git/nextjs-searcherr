@@ -1,9 +1,7 @@
 // Import all entity APIs (e.g., MovieAPI, SystemAPI, etc.)
 import {BaseAPI, BaseConfig} from "@/common/api/BaseAPI"
-import {ManualImportAPI} from "@/common/api/Radarr/entities/ManualImportAPI"
 import {MovieLookupAPI} from "@/common/api/Radarr/entities/MovieLookupAPI"
 import {QualityProfileAPI} from "@/common/api/Radarr/entities/QualityProfileAPI"
-import {QueueAPI} from "@/common/api/Radarr/entities/QueueAPI"
 import {RootFolderAPI} from "@/common/api/Radarr/entities/RootFolderAPI"
 import {SystemAPI} from "@/common/api/Radarr/entities/SystemAPI"
 import {MovieAPI, MovieAddSetting} from "@/common/api/Radarr/entities/MovieAPI"
@@ -16,8 +14,6 @@ export class RadarrAPI extends BaseAPI<RadarrAPIConfig>{
   // Entity APIs
   public system: SystemAPI
   public movie: MovieAPI
-  public queue: QueueAPI
-  public manualImport: ManualImportAPI
   public movieLookup: MovieLookupAPI
   public rootFolder: RootFolderAPI
   public qualityProfile: QualityProfileAPI
@@ -33,8 +29,6 @@ export class RadarrAPI extends BaseAPI<RadarrAPIConfig>{
     // Initialize each entity with the shared config
     this.system = new SystemAPI(this._axiosInstance)
     this.movie = new MovieAPI(this._axiosInstance)
-    this.queue = new QueueAPI(this._axiosInstance)
-    this.manualImport = new ManualImportAPI(this._axiosInstance)
     this.movieLookup = new MovieLookupAPI(this._axiosInstance)
     this.rootFolder = new RootFolderAPI(this._axiosInstance)
     this.qualityProfile = new QualityProfileAPI(this._axiosInstance)
