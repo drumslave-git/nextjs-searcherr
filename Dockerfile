@@ -3,7 +3,7 @@ FROM node:23-alpine AS base
 # Step 1. Rebuild the source code only when needed
 FROM base AS builder
 
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat python3 py3-pip make gcc g++
 
 WORKDIR /app
 
