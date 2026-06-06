@@ -12,6 +12,7 @@ services:
     volumes:
       - ./config:/app/config
     environment:
+      HOSTNAME: 0.0.0.0
       NEXT_WEBPACK_USEPOLLING: 1
     restart: unless-stopped
     labels:
