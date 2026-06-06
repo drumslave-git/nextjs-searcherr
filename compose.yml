@@ -7,8 +7,28 @@ services:
     ports:
       - 3000:3000
       - 5555:5555
+    networks:
+      - traefik
     volumes:
       - ./config:/app/config
     environment:
       NEXT_WEBPACK_USEPOLLING: 1
-    restart: always
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${TRAEFIK_DOCKER_NETWORK:-proxy}"
+      - "traefik.http.routers.searcherr.rule=Host(`${TRAEFIK_HOST:-searcherr.example.com}`)"
+      - "traefik.http.routers.searcherr.entrypoints=websecure"
+      - "traefik.http.routers.searcherr.tls=true"
+      - "traefik.http.routers.searcherr.tls.certresolver=cloudflare"
+      - "traefik.http.services.searcherr.loadbalancer.server.port=${TRAEFIK_SERVICE_PORT:-3000}"
+
+      - "homepage.group=${HOMEPAGE_GROUP:-ARRS}"
+      - "homepage.name=Searcherr"
+      - "homepage.icon="
+      - "homepage.href=https://${TRAEFIK_HOST:-searcherr.example.com}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_DOCKER_NETWORK:-proxy}"
