@@ -30,6 +30,13 @@ export interface SearchResponse {
   total_results: number;
 }
 
+function assertSearchResults(resp: AxiosResponse<any>) {
+  if (!Array.isArray(resp.data?.results)) {
+    const reason = resp.data?.status_message || resp.data?.message || `HTTP ${resp.status}`
+    throw new Error(`TMDB search failed: ${reason}`)
+  }
+}
+
 export class SearchAPI extends BaseEntityAPI {
   async generic<Result extends {adult: boolean}, Response>(type: 'tv' | 'movie', query: string, include_adult = false, iterationCallback = (iteration: AxiosResponse<Response>) => Promise.resolve(), language = 'en-US', page = 1) {
     let results: Result[] = []
@@ -41,6 +48,7 @@ export class SearchAPI extends BaseEntityAPI {
       page: currentPage
     })
 
+    assertSearchResults(resp)
     results = resp.data.results.filter((result: Result) => result.adult === include_adult)
     await iterationCallback({
       ...resp,
@@ -57,7 +65,8 @@ export class SearchAPI extends BaseEntityAPI {
         language,
         page: ++currentPage
       })
-      const iterationResults = resp.data.results.filter((result: Result) => result.adult === include_adult)
+      assertSearchResults(resp)
+      const iterationResults =resp.data.results.filter((result: Result) => result.adult === include_adult)
       await iterationCallback({
         ...resp,
         data: {

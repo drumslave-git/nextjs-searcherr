@@ -2,21 +2,54 @@ import withApi, {NextRequestWithApi} from "@/lib/withApi"
 
 async function getHandler(req: NextRequestWithApi, {params}: {params: {id: string, q: string}}) {
   const encoder = new TextEncoder()
+  let cancelled = false
+
+  const isMovieAdded = async (tmdbId: number) => {
+    const resp = await req.api.movie.get(undefined, tmdbId)
+    if (resp.status < 200 || resp.status >= 300 || !Array.isArray(resp.data)) {
+      const reason = resp.data?.message || resp.statusText || `HTTP ${resp.status}`
+      throw new Error(`${req.app.name} request failed: ${reason}`)
+    }
+    return resp.data.length > 0
+  }
 
   const readableStream = new ReadableStream({
     async start(controller) {
-      const {q} = await params
-      await req.api.tmdbSearch(q, async (resp) => {
-        resp.data.results = await Promise.all(resp.data.results.map(async (result) => {
-          const movie = await req.api.movie.get(undefined, result.id)
-          return {
-            ...result,
-            movieAdded: movie?.data?.at(0) !== undefined
+      const send = (data: unknown) => {
+        if (!cancelled) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+        }
+      }
+
+      try {
+        const {q} = await params
+        const resp = await req.api.tmdbSearch(q, async (page) => {
+          if (cancelled) {
+            // Client went away: stop paging through TMDB.
+            throw new Error('Search cancelled by client')
           }
-        }))
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(resp.data)}\n\n`))
-      })
-      controller.close()
+          page.data.results = await Promise.all(page.data.results.map(async (result) => ({
+            ...result,
+            movieAdded: await isMovieAdded(result.id)
+          })))
+          send(page.data)
+        })
+        if (resp.status === 402) {
+          send({message: 'TMDB API key is not configured'})
+        }
+      } catch (e) {
+        if (!cancelled) {
+          console.error('TMDB search failed:', e)
+          send({message: e instanceof Error ? e.message : 'Search failed'})
+        }
+      } finally {
+        if (!cancelled) {
+          controller.close()
+        }
+      }
+    },
+    cancel() {
+      cancelled = true
     },
   })
 
