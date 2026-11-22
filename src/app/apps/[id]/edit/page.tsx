@@ -1,6 +1,6 @@
 import {prisma} from "@/lib/prisma"
 import Edit from "@/components/EditApp"
-import {App} from "@prisma/client"
+import {toPublicApp} from "@/lib/publicApp"
 
 export default async function EditApp(props: {params: Promise<{id: string}>}) {
   const params = await props.params
@@ -14,7 +14,8 @@ export default async function EditApp(props: {params: Promise<{id: string}>}) {
     return <h1>App not found</h1>
   }
 
+  // Never pass the API key to the client component: props are serialized into the page.
   return (
-    <Edit app={app as unknown as App} /> 
+    <Edit app={toPublicApp(app)} />
   )
 }

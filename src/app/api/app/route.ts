@@ -1,13 +1,9 @@
 import {prisma} from "@/lib/prisma"
-import {App} from "@prisma/client"
+import {toPublicApp} from "@/lib/publicApp"
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const apps = await prisma.app.findMany()
-  const noKeyApps = apps.map((app: App) => {
-    const {api_key, ...rest} = app
-    return rest
-  })
-  return Response.json(noKeyApps)
+  return Response.json(apps.map(toPublicApp))
 }

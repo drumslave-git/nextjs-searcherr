@@ -1,9 +1,14 @@
 import {RadarrAPI} from "@/common/api/Radarr/api"
+import {resolveApiKey} from "@/lib/resolveApiKey"
 
 export async function POST(req: Request) {
-  const  {url, api_key} = await req.json()
+  const  {id, url, api_key} = await req.json()
+  const key = await resolveApiKey(id, url, api_key)
+  if ('error' in key) {
+    return key.error
+  }
   const api = new RadarrAPI({
-    apiKey: api_key,
+    apiKey: key.apiKey,
     baseUrl: url
   })
   const resp = await api.system.getStatus()

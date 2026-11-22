@@ -1,4 +1,5 @@
 import {prisma} from "@/lib/prisma"
+import {toPublicApp} from "@/lib/publicApp"
 
 export const GET = async (req: Request, props: {params: Promise<{id: string}>}) => {
   const params = await props.params
@@ -7,5 +8,8 @@ export const GET = async (req: Request, props: {params: Promise<{id: string}>}) 
       id: params.id
     }
   })
-  return Response.json(app) 
+  if (!app) {
+    return Response.json({message: 'App not found'}, {status: 404})
+  }
+  return Response.json(toPublicApp(app))
 }
